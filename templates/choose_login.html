@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Login Portal{% endblock %}
+{% block header_title %}Login Portal{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-8">
+  <div class="text-center mb-10">
+    <h2 class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-3">Welcome Back</h2>
+    <p class="text-zinc-500 dark:text-zinc-400 text-lg">Select your account type to access the portal.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Student Details -->
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-6 flex flex-col hover:border-primary-300 dark:hover:border-primary-700 transition-colors duration-300 group relative overflow-hidden">
+      <!-- Top highlight logic -->
+      <div class="absolute inset-x-0 top-0 h-1 bg-zinc-200 dark:bg-zinc-800 group-hover:bg-primary-500 transition-colors"></div>
+      
+      <div class="w-12 h-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 flex items-center justify-center mb-5 group-hover:bg-primary-50 dark:group-hover:bg-primary-500/10 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+        <i class="bi bi-mortarboard text-xl"></i>
+      </div>
+      
+      <h3 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">Student</h3>
+      <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-8 flex-1">Upload your resume to get AI-matched jobs, apply seamlessly, and network with experienced alumni.</p>
+      
+      <div class="space-y-3 mt-auto">
+        <a href="{{ url_for('login_student') }}" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 transition-colors">
+          Student Login
+        </a>
+        <a href="{{ url_for('register_student') }}" class="w-full flex justify-center py-2.5 px-4 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+          Create Account
+        </a>
+      </div>
+    </div>
+
+    <!-- Alumni Details -->
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-6 flex flex-col hover:border-primary-300 dark:hover:border-primary-700 transition-colors duration-300 group relative overflow-hidden ring-1 ring-primary-500/20 shadow-primary-500/5">
+      <div class="absolute inset-x-0 top-0 h-1 bg-primary-500 transition-colors"></div>
+      
+      <div class="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 flex items-center justify-center mb-5">
+        <i class="bi bi-briefcase text-xl"></i>
+      </div>
+      
+      <h3 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">Alumni</h3>
+      <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-8 flex-1">Give back to the community. Target new talent, post jobs, and connect with promising students instantly.</p>
+      
+      <div class="space-y-3 mt-auto">
+        <a href="{{ url_for('login_alumni') }}" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-600 transition-colors">
+          Alumni Login
+        </a>
+        <a href="{{ url_for('register_alumni') }}" class="w-full flex justify-center py-2.5 px-4 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+          Create Account
+        </a>
+      </div>
+    </div>
+
+    <!-- Admin Details -->
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm p-6 flex flex-col hover:border-red-300 dark:hover:border-red-700 transition-colors duration-300 group relative overflow-hidden">
+      <div class="absolute inset-x-0 top-0 h-1 bg-zinc-200 dark:bg-zinc-800 group-hover:bg-red-500 transition-colors"></div>
+      
+      <div class="w-12 h-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 flex items-center justify-center mb-5 group-hover:bg-red-50 dark:group-hover:bg-red-500/10 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+        <i class="bi bi-shield-lock text-xl"></i>
+      </div>
+      
+      <h3 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">Administrator</h3>
+      <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-8 flex-1">Oversee the entire platform, manage user accounts, oversee global jobs, and control announcements.</p>
+      
+      <div class="space-y-3 mt-auto">
+        <a href="{{ url_for('login_admin') }}" class="w-full flex justify-center py-2.5 px-4 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-900 transition-colors">
+          Admin Login
+        </a>
+        <div class="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 p-3 mt-3 border border-zinc-100 dark:border-zinc-800">
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 text-center">
+            Demo Server Defaults:<br>
+            <span class="font-medium text-zinc-700 dark:text-zinc-300">admin@alumni.com</span> / <span class="font-medium text-zinc-700 dark:text-zinc-300">admin123</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

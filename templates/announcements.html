@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Announcements{% endblock %}
+{% block header_title %}Announcements{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  
+  <!-- Left Column: Post Form -->
+  <div class="lg:col-span-1">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden sticky top-6">
+      <div class="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
+        <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+          <i class="bi bi-pencil-square text-primary-500"></i> Create Post
+        </h3>
+      </div>
+      
+      <div class="p-5">
+        {% if can_post %}
+          <form method="post" class="space-y-4">
+            <div>
+              <textarea rows="4" name="content" placeholder="Share updates, events, or request help..." required class="block w-full rounded-xl border-0 py-3 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow resize-none"></textarea>
+            </div>
+            <button type="submit" class="w-full inline-flex items-center justify-center rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-600 transition-colors">
+              Post Announcement
+            </button>
+          </form>
+        {% else %}
+          <div class="rounded-xl border border-blue-200 dark:border-blue-500/20 bg-blue-50 dark:bg-blue-500/10 p-4 text-sm text-blue-800 dark:text-blue-400">
+            <i class="bi bi-info-circle mr-1"></i> Students can view announcements, but only <strong>Alumni</strong> and <strong>Admins</strong> can post them.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Feed -->
+  <div class="lg:col-span-2 space-y-4">
+    <h3 class="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-2">Feed</h3>
+    
+    {% if posts %}
+      {% for p in posts %}
+        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden p-5">
+          <div class="flex items-start justify-between gap-4 mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-sm font-bold text-zinc-600 dark:text-zinc-400">
+                {{ p.posted_by.full_name[0]|upper }}
+              </div>
+              <div>
+                <p class="text-sm font-bold text-zinc-900 dark:text-zinc-100">{{ p.posted_by.full_name }}</p>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ p.created_at.strftime("%d %b %Y • %I:%M %p") }}</p>
+              </div>
+            </div>
+            
+            {% if current_user.role == "admin" or p.posted_by_id == current_user.id %}
+              <form method="post" action="{{ url_for('delete_post', post_id=p.id) }}">
+                <button type="submit" onclick="return confirm('Delete this post?')" class="text-zinc-400 hover:text-red-600 dark:hover:text-red-400 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Delete Post">
+                  <i class="bi bi-trash3"></i>
+                </button>
+              </form>
+            {% endif %}
+          </div>
+          
+          <div class="text-zinc-700 dark:text-zinc-300 text-sm whitespace-pre-wrap leading-relaxed">
+            {{ p.content }}
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="bg-white dark:bg-zinc-900 border border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl p-12 text-center flex flex-col items-center justify-center">
+        <i class="bi bi-megaphone text-4xl text-zinc-300 dark:text-zinc-700 mb-4"></i>
+        <h3 class="text-base font-medium text-zinc-900 dark:text-zinc-100">No announcements yet</h3>
+        <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Check back later or post the first one!</p>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

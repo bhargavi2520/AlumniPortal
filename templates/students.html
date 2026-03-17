@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+{% block title %}Talent Grid{% endblock %}
+{% block header_title %}Students Directory{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="mb-8">
+  <h2 class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-2">Talent Grid</h2>
+  <p class="text-zinc-500 dark:text-zinc-400 text-lg">Discover brilliant students. Filter by skills, view profiles, and download resumes.</p>
+</div>
+
+<!-- Search & Filtering Section -->
+<div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-6 mb-8">
+  <form id="search-form" class="flex flex-col md:flex-row gap-4 mb-4" method="GET" action="{{ url_for('students_directory') }}">
+    
+    <!-- Unified Search Field -->
+    <div class="flex-1 relative">
+      <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+        <i class="bi bi-search text-zinc-400"></i>
+      </div>
+      <input type="text" id="q-input" name="q" value="{{ q }}" placeholder="Search by student name or skills..." class="block w-full rounded-xl border-0 py-3 pl-11 pr-4 text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm transition-shadow">
+    </div>
+    
+    <!-- Department Filter -->
+    <div class="w-full md:w-72 relative">
+      <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+        <i class="bi bi-buildings text-zinc-400"></i>
+      </div>
+      <input type="text" name="dept" value="{{ dept }}" placeholder="University Department..." class="block w-full rounded-xl border-0 py-3 pl-11 pr-4 text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm transition-shadow">
+    </div>
+    
+    <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-8 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 transition-colors whitespace-nowrap">
+      Filter Talent
+    </button>
+  </form>
+
+  <!-- Skill Filter Chips (Interactive: appends to search input) -->
+  <div class="flex items-center flex-wrap gap-2">
+    <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400 mr-2">Popular Skills:</span>
+    {% set popular_skills = ['Python', 'Java', 'Data Science', 'Web Development', 'React', 'Machine Learning'] %}
+    {% for skill in popular_skills %}
+      <button type="button" onclick="addSkillToSearch('{{ skill }}')" class="inline-flex items-center rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400 transition-colors border border-transparent hover:border-emerald-200 dark:hover:border-emerald-500/20">
+        {{ skill }}
+      </button>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Talent Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+  {% for s in students %}
+    <!-- Parse arbitrary skills safely ignoring backend limits -->
+    {% set parsed_skills = (s.skills.split(',') if s.skills and s.skills.strip() else []) %}
+    
+    <!-- Card Container -->
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-800 transition-all duration-300 flex flex-col cursor-pointer group"
+         onclick="openQuickView(this)"
+         data-id="{{ s.id }}"
+         data-name="{{ s.full_name }}"
+         data-dept="{{ s.department }}"
+         data-batch="{{ s.batch }}"
+         data-photo="{{ s.profile_photo if s.profile_photo else '' }}"
+         data-skills="{{ parsed_skills|join(',') }}"
+         data-resume-url="{{ url_for('resume_view', student_id=s.id) if s.resume_filename else '' }}"
+         data-chat-url="{{ url_for('chat', user_id=s.id) }}"
+         data-verified="{{ 'true' if s.is_verified else 'false' }}"
+         data-conn-status="{{ s.connection_status }}"
+         data-conn-id="{{ s.connection_id if s.connection_id else '' }}"
+         data-conn-sender="{{ s.connection_sender if s.connection_sender else '' }}"
+         data-conn-action="{{ url_for('send_connection', user_id=s.id) }}">
+      
+      <div class="p-6 flex flex-col items-center flex-1 text-center relative overflow-hidden">
+        
+        <!-- Profile Photo -->
+        <div class="relative w-24 h-24 mb-4">
+          {% if s.profile_photo %}
+            <img src="{{ s.profile_photo }}" alt="{{ s.full_name }}" class="w-full h-full object-cover rounded-full border-4 border-zinc-50 dark:border-zinc-800 shadow-sm group-hover:scale-105 transition-transform duration-300">
+          {% else %}
+            <div class="w-full h-full rounded-full border-4 border-zinc-50 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-300">
+              <i class="bi bi-person text-4xl text-zinc-400 dark:text-zinc-500"></i>
+            </div>
+          {% endif %}
+          
+          <!-- Resume Indicator Badge -->
+          {% if s.resume_filename %}
+            <div class="absolute bottom-0 right-0 bg-emerald-500 text-white w-7 h-7 rounded-full flex items-center justify-center border-2 border-white dark:border-zinc-900 shadow-sm" title="Resume Available">
+              <i class="bi bi-file-earmark-text text-xs"></i>
+            </div>
+          {% endif %}
+        </div>
+        
+        <!-- Student Info -->
+        <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors flex items-center justify-center gap-1.5">
+          {{ s.full_name }}
+          {% if s.is_verified %}
+            <span class="inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" title="Verified Alumni Portal Member">
+              <i class="bi bi-shield-check mr-1"></i> Verified
+            </span>
+          {% endif %}
+        </h3>
+        <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400 mt-1 mb-4 flex items-center justify-center gap-1.5">
+          <i class="bi bi-mortarboard"></i> {{ s.department }} {{ "(" ~ s.batch ~ ")" if s.batch else "" }}
+        </p>
+        
+        <!-- Skill Tags Structure (Shows Top 3) -->
+        <div class="flex flex-wrap items-center justify-center gap-2 mt-auto">
+          {% for skill in parsed_skills[:3] %}
+            <span class="inline-flex items-center rounded-md bg-emerald-100 dark:bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 ring-1 ring-inset ring-emerald-600/20 dark:ring-emerald-500/20">
+              {{ skill | trim }}
+            </span>
+          {% endfor %}
+          {% if parsed_skills|length > 3 %}
+            <span class="inline-flex items-center rounded-md bg-zinc-100 dark:bg-zinc-800 px-2 py-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300 ring-1 ring-inset ring-zinc-500/20">
+              +{{ parsed_skills|length - 3 }}
+            </span>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- Footer actions purely aesthetic on card -->
+      <div class="px-6 py-4 border-t border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-800/20 text-center rounded-b-2xl">
+        <span class="text-sm font-medium text-emerald-600 dark:text-emerald-400 group-hover:underline">Quick View Profile</span>
+      </div>
+    </div>
+  {% else %}
+    <div class="col-span-full py-20 text-center rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50">
+      <div class="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-4 text-zinc-400 dark:text-zinc-600">
+        <i class="bi bi-people text-3xl"></i>
+      </div>
+      <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100">No students found</h3>
+      <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">Try adjusting your search terms or clearing the department filters.</p>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Background Overlay -->
+<div id="quick-view-overlay" class="fixed inset-0 bg-zinc-900/60 dark:bg-zinc-950/80 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity duration-300" onclick="closeQuickView()"></div>
+
+<!-- Quick View Modal Sliding Panel (Side or Center Modal) -->
+<div id="quick-view-modal" class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white dark:bg-zinc-900 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col border-l border-zinc-200 dark:border-zinc-800 hidden">
+  
+  <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
+    <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100">Student Profile</h3>
+    <button type="button" onclick="closeQuickView()" class="p-2 -mr-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800">
+      <i class="bi bi-x-lg text-lg"></i>
+    </button>
+  </div>
+
+  <div class="flex-1 overflow-y-auto p-6">
+    <div class="flex flex-col items-center text-center mb-8">
+      <!-- Modal Profile Photo -->
+      <div class="w-32 h-32 mb-4 relative" id="modal-photo-container">
+        <!-- Injected via JS -->
+      </div>
+      <h2 id="modal-name" class="text-2xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-center gap-2 mb-1">
+        <span></span>
+        <span id="modal-verified-badge" class="hidden inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" title="Verified Alumni Portal Member">
+          <i class="bi bi-shield-check mr-1"></i> Verified
+        </span>
+      </h2>
+      <p id="modal-dept" class="text-sm font-medium text-emerald-600 dark:text-emerald-400"></p>
+    </div>
+
+    <!-- Full Skills List -->
+    <div class="mb-8">
+      <h4 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider mb-3">Core Technical Skills</h4>
+      <div id="modal-skills" class="flex flex-wrap gap-2">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+
+    <!-- Resume Preview Section -->
+    <div class="mb-6">
+       <h4 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider mb-3">Interactive Assets</h4>
+       <div id="modal-resume-section" class="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800 text-center">
+         <i class="bi bi-file-earmark-pdf text-4xl text-zinc-400 dark:text-zinc-500 mb-3 block"></i>
+         <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-1">Resume Document</p>
+         <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-4">View or download the student's latest CV.</p>
+         
+         <div class="flex flex-col gap-2">
+           <a href="#" id="modal-resume-link" class="w-full inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 transition-colors">
+             <i class="bi bi-cloud-download mr-2"></i> Download Resume
+           </a>
+         </div>
+       </div>
+       
+       <div id="modal-no-resume-section" class="bg-amber-50 dark:bg-amber-500/10 rounded-xl p-5 border border-amber-200 dark:border-amber-500/20 text-center hidden">
+         <i class="bi bi-eye-slash text-2xl text-amber-500 mb-2 block"></i>
+         <p class="text-sm font-medium text-amber-800 dark:text-amber-400">No resume attached to this profile.</p>
+       </div>
+    </div>
+  </div>
+
+  <div class="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50" id="modal-action-footer">
+    <!-- Buttons injected via JS -->
+  </div>
+</div>
+
+<script>
+  // Script to append skill to search bar dynamically
+  function addSkillToSearch(skill) {
+    const searchInput = document.getElementById('q-input');
+    const currentValue = searchInput.value.trim();
+    if (!currentValue.toLowerCase().includes(skill.toLowerCase())) {
+      searchInput.value = currentValue ? `${currentValue} ${skill}` : skill;
+    }
+    document.getElementById('search-form').submit();
+  }
+
+  // Quick View Modal Logic
+  const overlay = document.getElementById('quick-view-overlay');
+  const modal = document.getElementById('quick-view-modal');
+  
+  function openQuickView(cardEl) {
+    // Read arbitrary custom data definitions injected per student
+    const name = cardEl.getAttribute('data-name');
+    const dept = cardEl.getAttribute('data-dept');
+    const batch = cardEl.getAttribute('data-batch');
+    const photo = cardEl.getAttribute('data-photo');
+    const skillsBlob = cardEl.getAttribute('data-skills');
+    const resumeUrl = cardEl.getAttribute('data-resume-url');
+    const chatUrl = cardEl.getAttribute('data-chat-url');
+    const isVerified = cardEl.getAttribute('data-verified') === 'true';
+    
+    // Connection Info
+    const connStatus = cardEl.getAttribute('data-conn-status');
+    const connId = cardEl.getAttribute('data-conn-id');
+    const connSenderId = cardEl.getAttribute('data-conn-sender');
+    const connActionUrl = cardEl.getAttribute('data-conn-action');
+    const currentUserId = "{{ current_user.id }}";
+
+    // Populate Modal Values
+    document.querySelector('#modal-name span').textContent = name;
+    document.getElementById('modal-dept').textContent = dept + (batch ? ` (${batch})` : '');
+    
+    const badge = document.getElementById('modal-verified-badge');
+    if (isVerified) {
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+    
+    // Photo Logic
+    const photoContainer = document.getElementById('modal-photo-container');
+    if (photo) {
+      photoContainer.innerHTML = `<img src="${photo}" alt="${name}" class="w-full h-full object-cover rounded-full border-4 border-white dark:border-zinc-800 shadow-lg">`;
+    } else {
+      photoContainer.innerHTML = `<div class="w-full h-full rounded-full border-4 border-white dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shadow-lg"><i class="bi bi-person text-6xl text-zinc-400 dark:text-zinc-500"></i></div>`;
+    }
+    
+    // Skill Layout
+    const skillsContainer = document.getElementById('modal-skills');
+    skillsContainer.innerHTML = ''; // reset
+    if (skillsBlob) {
+      const skillsArray = skillsBlob.split(',');
+      skillsArray.forEach(sk => {
+        const cleanSkill = sk.trim();
+        if(cleanSkill){
+          const span = document.createElement('span');
+          span.className = 'inline-flex items-center rounded-lg bg-emerald-100 dark:bg-emerald-500/10 px-3 py-1.5 text-sm font-semibold text-emerald-700 dark:text-emerald-400 ring-1 ring-inset ring-emerald-600/20 dark:ring-emerald-500/20';
+          span.textContent = cleanSkill;
+          skillsContainer.appendChild(span);
+        }
+      });
+    }
+
+    // Resume Checks
+    const resumeSection = document.getElementById('modal-resume-section');
+    const noResumeSection = document.getElementById('modal-no-resume-section');
+    const resumeLink = document.getElementById('modal-resume-link');
+    
+    if (resumeUrl && resumeUrl.trim() !== '') {
+      resumeSection.classList.remove('hidden');
+      noResumeSection.classList.add('hidden');
+      resumeLink.href = resumeUrl;
+      // Target blank to open safely without navigating away context
+      resumeLink.target = '_blank';
+    } else {
+      resumeSection.classList.add('hidden');
+      noResumeSection.classList.remove('hidden');
+    }
+
+    // Action Footer Logic
+    const footer = document.getElementById('modal-action-footer');
+    footer.innerHTML = '';
+    
+    if (connStatus === 'accepted') {
+      footer.innerHTML = `
+        <a href="${chatUrl}" class="w-full inline-flex items-center justify-center rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm font-semibold text-zinc-700 dark:text-zinc-200 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors">
+          <i class="bi bi-chat-dots mr-2"></i> Send Message
+        </a>
+      `;
+    } else if (connStatus === 'pending') {
+      if (connSenderId === currentUserId) {
+        footer.innerHTML = `
+          <button disabled class="w-full inline-flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 px-4 py-2.5 text-sm font-semibold text-zinc-500 dark:text-zinc-400 cursor-not-allowed border border-zinc-200 dark:border-zinc-700">
+            <i class="bi bi-clock-history mr-2"></i> Connection Pending
+          </button>
+        `;
+      } else {
+        footer.innerHTML = `
+          <div class="flex gap-2">
+            <form method="post" action="/connect/${connId}/accept" class="w-full">
+                <button type="submit" class="w-full inline-flex items-center justify-center rounded-lg bg-emerald-600 px-3 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none transition-colors">
+                  <i class="bi bi-check2 mr-1"></i> Accept
+                </button>
+            </form>
+            <form method="post" action="/connect/${connId}/reject" class="w-full">
+                <button type="submit" class="w-full inline-flex items-center justify-center rounded-lg border border-red-200 bg-white dark:bg-zinc-800 px-3 py-2.5 text-xs font-semibold text-red-600 shadow-sm hover:bg-red-50 focus:outline-none transition-colors">
+                  <i class="bi bi-x mr-1"></i> Decline
+                </button>
+            </form>
+          </div>
+        `;
+      }
+    } else {
+      footer.innerHTML = `
+        <form method="post" action="${connActionUrl}" class="w-full">
+            <button type="submit" class="w-full inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 focus:outline-none transition-colors">
+              <i class="bi bi-person-plus mr-2"></i> Connect
+            </button>
+        </form>
+      `;
+    }
+
+    // Display components and trigger slide in transition
+    overlay.classList.remove('hidden');
+    modal.classList.remove('hidden');
+    
+    // force reflow for smooth transform
+    void modal.offsetWidth; 
+    
+    overlay.classList.remove('opacity-0');
+    overlay.classList.add('opacity-100');
+    modal.classList.remove('translate-x-full');
+    modal.classList.add('translate-x-0');
+    
+    // Lock background scrolling
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeQuickView() {
+    overlay.classList.remove('opacity-100');
+    overlay.classList.add('opacity-0');
+    modal.classList.remove('translate-x-0');
+    modal.classList.add('translate-x-full');
+    
+    document.body.style.overflow = 'auto';
+
+    setTimeout(() => {
+      overlay.classList.add('hidden');
+      modal.classList.add('hidden');
+    }, 300);
+  }
+</script>
+{% endblock %}

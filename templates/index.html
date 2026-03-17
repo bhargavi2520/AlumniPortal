@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Home - Alumni Portal{% endblock %}
+{% block header_title %}Home{% endblock %}
+{% block content %}
+<div class="relative overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 p-8 md:p-12 mb-8 shadow-xl">
+  <!-- Decorative background elements -->
+  <div class="absolute inset-0 bg-gradient-to-br from-primary-900/40 via-zinc-900 to-zinc-900 opacity-60"></div>
+  <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-primary-600/20 blur-3xl"></div>
+  
+  <div class="relative z-10 max-w-3xl">
+    <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">Connect. Share. Grow.</h1>
+    <p class="text-lg text-zinc-300 mb-8 leading-relaxed">
+      The ultimate platform bridging the gap between Students, Alumni, and Administration.
+      Exclusive tools for alumni recruiters, dedicated channels for campus announcements, and powerful resume-matching algorithms for students.
+    </p>
+    
+    <div class="flex flex-wrap gap-4">
+      {% if not current_user.is_authenticated %}
+        <a class="inline-flex items-center justify-center rounded-lg bg-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 transition-colors" href="{{ url_for('choose_login') }}">
+          Login to Portal
+        </a>
+        <a class="inline-flex items-center justify-center rounded-lg bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-white/20 ring-1 ring-inset ring-white/20 transition-all border border-transparent backdrop-blur-sm" href="{{ url_for('register_student') }}">
+          New Student? Register
+        </a>
+      {% else %}
+        <a class="inline-flex items-center justify-center rounded-lg bg-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 transition-colors" href="{{ url_for('dashboard') }}">
+          Go to Dashboard <i class="bi bi-arrow-right ml-2 -mr-1"></i>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Recent Jobs Widget -->
+  <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
+    <div class="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex justify-between items-center">
+      <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+        <i class="bi bi-briefcase text-primary-500"></i> Recent Jobs
+      </h3>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('jobs') }}" class="text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">View all</a>
+      {% endif %}
+    </div>
+    <div class="flex-1">
+      {% if jobs %}
+        <ul class="divide-y divide-zinc-100 dark:divide-zinc-800/50">
+          {% for j in jobs[:5] %}
+            <li class="px-5 py-4 group hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20 transition-colors">
+              <div class="flex justify-between items-start gap-4">
+                <div>
+                  <h4 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{{ j.title }}</h4>
+                  <div class="mt-1 flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+                    <span class="flex items-center gap-1"><i class="bi bi-building"></i> {{ j.company }}</span>
+                    <span class="flex items-center gap-1"><i class="bi bi-geo-alt"></i> {{ j.location }}</span>
+                  </div>
+                </div>
+                {% if current_user.is_authenticated %}
+                  <a href="{{ url_for('job_view', job_id=j.id) }}" class="opacity-0 group-hover:opacity-100 mt-1 inline-flex items-center justify-center rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-1.5 text-zinc-500 hover:text-primary-600 hover:border-primary-200 dark:hover:border-primary-800 transition-all flex-shrink-0">
+                    <i class="bi bi-eye text-sm"></i>
+                  </a>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="p-8 text-center h-full flex flex-col justify-center items-center">
+          <i class="bi bi-briefcase text-3xl text-zinc-300 dark:text-zinc-700 mb-3 block"></i>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400">No jobs posted yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recent Announcements Widget -->
+  <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
+    <div class="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex justify-between items-center">
+      <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+        <i class="bi bi-megaphone text-primary-500"></i> Built-in Announcements
+      </h3>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('announcements') }}" class="text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">View all</a>
+      {% endif %}
+    </div>
+    <div class="flex-1">
+      {% if posts %}
+        <ul class="divide-y divide-zinc-100 dark:divide-zinc-800/50">
+          {% for p in posts[:3] %}
+            <li class="px-5 py-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-medium text-zinc-900 dark:text-zinc-100">{{ p.posted_by.full_name }}</span>
+                <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ p.created_at.strftime("%d %b %Y") }}</span>
+              </div>
+              <p class="text-sm text-zinc-600 dark:text-zinc-300 line-clamp-3">{{ p.content }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="p-8 text-center h-full flex flex-col justify-center items-center">
+          <i class="bi bi-megaphone text-3xl text-zinc-300 dark:text-zinc-700 mb-3 block"></i>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400">No announcements yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

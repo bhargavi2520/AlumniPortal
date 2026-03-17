@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Jobs{% endblock %}
+{% block header_title %}Job Board{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+    {% if current_user.role == "alumni" %}
+      Alumni Job Board
+    {% elif current_user.role == "admin" %}
+      Platform Jobs
+    {% else %}
+      Active Jobs
+    {% endif %}
+  </h2>
+  
+  {% if current_user.role == "alumni" %}
+    <a href="{{ url_for('job_new') }}" class="inline-flex items-center justify-center rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition-colors">
+      <i class="bi bi-plus-lg mr-2"></i> Post Job
+    </a>
+  {% endif %}
+</div>
+
+<!-- Search Bar -->
+<form class="flex flex-col sm:flex-row gap-3 mb-8" method="GET" action="{{ url_for('jobs') }}">
+  <div class="flex-1 relative">
+    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+      <i class="bi bi-search text-zinc-400"></i>
+    </div>
+    <input type="text" 
+           class="block w-full rounded-xl border-0 py-3 pl-11 pr-4 text-zinc-900 bg-white ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 dark:bg-zinc-900 dark:text-zinc-100 dark:ring-zinc-800 dark:placeholder:text-zinc-500 sm:text-sm sm:leading-6 shadow-sm transition-shadow" 
+           name="q" 
+           value="{{ q }}" 
+           placeholder="Search jobs by title, company, or location...">
+  </div>
+  <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 transition-colors whitespace-nowrap">
+    Search Jobs
+  </button>
+</form>
+
+
+
+{% if current_user.role == 'student' %}
+  {% if current_user.resume_ml_status == 'processing' %}
+    <div class="rounded-xl bg-blue-50 dark:bg-blue-900/20 p-4 border border-blue-200 dark:border-blue-800 mb-6 flex items-start gap-3 shadow-sm">
+      <i class="bi bi-hourglass-split text-blue-600 dark:text-blue-400 mt-0.5 text-lg"></i>
+      <div class="text-sm text-blue-800 dark:text-blue-300">
+        <strong class="font-semibold text-blue-900 dark:text-blue-200">Analyzing Resume...</strong> We are currently scanning your uploaded resume to find the best job matches for you. Please check back in a moment or refresh the page.
+      </div>
+    </div>
+  {% elif current_user.resume_ml_status == 'failed' %}
+    <div class="rounded-xl bg-red-50 dark:bg-red-900/20 p-4 border border-red-200 dark:border-red-800 mb-6 flex items-start gap-3 shadow-sm">
+      <i class="bi bi-exclamation-triangle text-red-600 dark:text-red-400 mt-0.5 text-lg"></i>
+      <div class="text-sm text-red-800 dark:text-red-300">
+        <strong class="font-semibold text-red-900 dark:text-red-200">Parsing Failed.</strong> We couldn't extract text from your resume. Please ensure it is a standard text-based PDF and re-upload it.
+      </div>
+    </div>
+  {% endif %}
+{% endif %}
+
+<!-- Responsive Grid: 1 col on mobile, 2 col on tablet, 3 col on large desktop -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+  {% for j in jobs %}
+    <!-- Display logic: Admin sees all, Student sees all, Alumni sees all but with different actions 
+         (Note: If Alumni should ONLY see their own jobs, we'd wrap this card in an `if j.posted_by_id == current_user.id`. 
+         Assuming they see all jobs based on existing logic, but have distinct buttons for their own jobs). -->
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200 flex flex-col h-full overflow-hidden group">
+      <div class="p-6 flex-1 flex flex-col">
+        <div class="flex justify-between items-start gap-4 mb-4">
+          <div class="flex-1">
+            <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center flex-wrap gap-2 mb-1.5 line-clamp-2">
+              {{ j.title }}
+            </h3>
+            
+            <div class="text-sm font-semibold text-primary-600 dark:text-primary-400 flex items-center gap-2 mb-3">
+              <i class="bi bi-building"></i> {{ j.company }}
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+              <span class="flex items-center gap-1.5"><i class="bi bi-geo-alt"></i> {{ j.location }}</span>
+              <span class="flex items-center gap-1.5"><i class="bi bi-briefcase"></i> {{ j.job_type }}</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400 mt-2">
+              <span class="flex items-center gap-1.5"><i class="bi bi-currency-rupee"></i> {{ j.min_salary }} - {{ j.max_salary }} LPA</span>
+              <span class="flex items-center gap-1.5"><i class="bi bi-clock-history"></i> {{ j.required_experience }}</span>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-1.5">
+              {% for skill in j.required_skills.split(',') %}
+                {% if skill.strip() %}
+                  <span class="inline-flex items-center rounded-md bg-zinc-50 dark:bg-zinc-800/50 px-2 py-1 text-[10px] font-medium text-zinc-600 dark:text-zinc-400 ring-1 ring-inset ring-zinc-500/10 dark:ring-zinc-400/20">
+                    {{ skill.strip() }}
+                  </span>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Match Score Badge (Student Only) -->
+        {% if current_user.role == 'student' and j.match_score is defined and j.match_score > 0 %}
+          {% set score = j.match_score|int %}
+          <div class="mt-2 mb-1">
+            {% if score > 75 %}
+              <span class="inline-flex items-center rounded-full bg-emerald-500 px-2.5 py-1 text-xs font-semibold text-white shadow-sm ring-1 ring-emerald-600/20">
+                <i class="bi bi-star-fill mr-1 opacity-80"></i> Excellent Match ({{ score }}%)
+              </span>
+            {% elif score >= 50 %}
+              <span class="inline-flex items-center rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-zinc-900 shadow-sm ring-1 ring-amber-500/20">
+                <i class="bi bi-star-half mr-1 opacity-80"></i> Good Match ({{ score }}%)
+              </span>
+            {% else %}
+              <span class="inline-flex items-center rounded-full bg-zinc-400 px-2.5 py-1 text-xs font-semibold text-white shadow-sm ring-1 ring-zinc-500/20">
+                <i class="bi bi-star mr-1 opacity-80"></i> Low Match ({{ score }}%)
+              </span>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {% if current_user.role == 'admin' %}
+          <div class="mt-2 mb-1">
+            <span class="inline-flex items-center rounded-full {% if j.is_approved %}bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400{% else %}bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400{% endif %} px-2 py-0.5 text-xs font-medium border border-transparent shadow-sm">
+                {{ "Approved" if j.is_approved else "Pending Approval" }}
+            </span>
+          </div>
+        {% endif %}
+
+        {% if current_user.role == 'admin' %}
+        <div class="mt-3 border-t border-zinc-100 dark:border-zinc-800/50 pt-3 grid grid-cols-4 gap-1 text-center">
+          <div>
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-0.5">Total</p>
+            <p class="text-base font-bold text-zinc-900 dark:text-zinc-100">{{ j.app_total }}</p>
+          </div>
+          <div>
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-emerald-500 dark:text-emerald-400 mb-0.5">Accepted</p>
+            <p class="text-base font-bold text-emerald-600 dark:text-emerald-400">{{ j.app_accepted }}</p>
+          </div>
+          <div>
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-amber-500 dark:text-amber-400 mb-0.5">Pending</p>
+            <p class="text-base font-bold text-amber-600 dark:text-amber-400">{{ j.app_pending }}</p>
+          </div>
+          <div>
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-red-500 dark:text-red-400 mb-0.5">Rejected</p>
+            <p class="text-base font-bold text-red-600 dark:text-red-400">{{ j.app_rejected }}</p>
+          </div>
+        </div>
+        {% endif %}
+        
+        <div class="mt-auto pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex flex-col gap-3">
+          
+          <!-- Role-based Controls/Actions -->
+          <div class="flex items-center justify-between w-full">
+            {% if current_user.role == "student" %}
+              {% if j.has_applied %}
+                <span class="flex-1 inline-flex items-center justify-center rounded-lg bg-zinc-300 dark:bg-zinc-700 px-3 py-2 text-sm font-semibold text-zinc-500 dark:text-zinc-400 cursor-not-allowed mr-2">
+                  Already Applied
+                </span>
+              {% else %}
+                <a href="{{ url_for('job_view', job_id=j.id) }}" class="flex-1 inline-flex items-center justify-center rounded-lg bg-zinc-900 dark:bg-white px-3 py-2 text-sm font-semibold text-white dark:text-zinc-900 shadow-sm hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors mr-2">
+                  Apply Now
+                </a>
+              {% endif %}
+              <button type="button" class="inline-flex items-center justify-center rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2 text-zinc-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors" title="Save Job">
+                <i class="bi bi-bookmark"></i>
+              </button>
+
+            {% elif current_user.role == "alumni" %}
+              <!-- Alumni actions -->
+              <a href="{{ url_for('job_view', job_id=j.id) }}" class="flex-1 inline-flex items-center justify-center rounded-lg bg-zinc-900 dark:bg-white px-3 py-2 text-sm font-semibold text-white dark:text-zinc-900 shadow-sm hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors mr-2">
+                View Job
+              </a>
+              {% if j.posted_by_id == current_user.id %}
+                <a href="#" class="inline-flex items-center justify-center rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-200 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors mr-2" title="Edit Job">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+                <a href="{{ url_for('job_view', job_id=j.id) }}" class="inline-flex items-center justify-center rounded-lg border border-primary-200 dark:border-primary-500/30 bg-primary-50 dark:bg-primary-500/10 px-3 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-500/20 transition-colors" title="View Applicants">
+                  <i class="bi bi-people-fill"></i>
+                </a>
+              {% endif %}
+
+            {% elif current_user.role == "admin" %}
+              <!-- Admin actions -->
+              <a href="{{ url_for('job_view', job_id=j.id) }}" class="flex-1 inline-flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 px-3 py-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors mr-2">
+                Manage Job
+              </a>
+              <!-- Delete Job Form -->
+              <form method="POST" action="{{ url_for('job_delete', job_id=j.id) }}" class="inline" onsubmit="return confirm('Permanently delete \'{{ j.title }}\'? This will also remove all applications for this job.');">
+                <button type="submit" class="inline-flex items-center justify-center rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/10 p-2 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors" title="Delete Job">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            {% endif %}
+          </div>
+          
+          <!-- Posted By Info at exactly bottom -->
+          <div class="flex items-center gap-2 mt-2">
+            <div class="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
+              {{ j.posted_by.full_name[0]|upper }}
+            </div>
+            <div class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
+              Posted by <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ j.posted_by.full_name }}</span> • {{ j.created_at.strftime("%b %d") }}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <!-- Empty State -->
+    <div class="col-span-full py-16 flex flex-col items-center justify-center text-center rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50">
+      <div class="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4 text-zinc-400 dark:text-zinc-600">
+        <i class="bi bi-briefcase text-2xl"></i>
+      </div>
+      <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100">No jobs found</h3>
+      <p class="mt-1.5 text-sm text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">We couldn't find any jobs matching your criteria. Check back later or try adjusting your search terms.</p>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

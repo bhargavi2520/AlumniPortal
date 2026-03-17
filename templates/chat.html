@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Chat{% endblock %}
+{% block header_title %}Messages{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto h-[80vh] flex flex-col">
+  <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
+    
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-4">
+        <a href="{{ url_for('messages') }}" class="inline-flex items-center justify-center rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors" title="Back to Inbox">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 flex items-center justify-center font-bold text-sm border border-primary-100 dark:border-primary-500/20">
+            {{ other.full_name[0]|upper }}
+          </div>
+          <div>
+            <h5 class="font-bold text-zinc-900 dark:text-zinc-100 leading-tight">{{ other.full_name }}</h5>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 capitalize flex items-center gap-1">
+              {% if other.role == 'student' %}<i class="bi bi-mortarboard text-primary-500"></i>{% else %}<i class="bi bi-briefcase text-emerald-500"></i>{% endif %}
+              {{ other.role }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages Area -->
+    <div class="flex-1 overflow-y-auto p-6 bg-zinc-50/30 dark:bg-zinc-950/30 flex flex-col gap-4">
+      {% for m in thread %}
+        {% if m.sender_id == current_user.id %}
+          <!-- Sent Message -->
+          <div class="flex justify-end mb-2">
+            <div class="max-w-[75%] rounded-2xl rounded-tr-sm bg-primary-600 px-4 py-2.5 text-white shadow-sm border border-primary-700">
+              <div class="text-xs text-primary-200 mb-1 flex justify-end">{{ m.created_at.strftime("%I:%M %p") }}</div>
+              <div class="text-sm leading-relaxed whitespace-pre-wrap">{{ m.body }}</div>
+            </div>
+          </div>
+        {% else %}
+          <!-- Received Message -->
+          <div class="flex justify-start mb-2 group">
+            <div class="max-w-[75%] rounded-2xl rounded-tl-sm bg-white dark:bg-zinc-800 px-4 py-2.5 text-zinc-900 dark:text-zinc-100 shadow-sm border border-zinc-200 dark:border-zinc-700">
+              <div class="text-xs text-zinc-400 dark:text-zinc-500 mb-1">{{ m.created_at.strftime("%I:%M %p") }}</div>
+              <div class="text-sm leading-relaxed whitespace-pre-wrap">{{ m.body }}</div>
+            </div>
+          </div>
+        {% endif %}
+      {% else %}
+        <div class="flex-1 flex flex-col items-center justify-center text-center">
+          <div class="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 dark:text-zinc-500 mb-4">
+            <i class="bi bi-chat-quote text-2xl"></i>
+          </div>
+          <p class="text-zinc-500 dark:text-zinc-400 text-sm">No messages yet. Start the conversation!</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Input Area -->
+    <div class="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
+      <form method="post" class="flex gap-3">
+        <input name="body" placeholder="Type a message..." required class="block w-full rounded-xl border-0 py-3 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-primary-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-600 transition-colors shrink-0 group">
+          <span class="hidden sm:inline">Send</span>
+          <i class="bi bi-send sm:ml-2 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform"></i>
+        </button>
+      </form>
+    </div>
+    
+  </div>
+</div>
+{% endblock %}

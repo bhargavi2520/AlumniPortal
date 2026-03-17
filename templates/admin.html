@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel{% endblock %}
+{% block header_title %}Administration{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+  <div>
+    <h2 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Admin Dashboard</h2>
+    <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Manage users, jobs, and platform operations.</p>
+  </div>
+</div>
+
+<div class="rounded-xl bg-blue-50 dark:bg-blue-500/10 p-4 border border-blue-200 dark:border-blue-500/20 mb-8 flex items-start gap-3 shadow-sm">
+  <i class="bi bi-lightbulb text-blue-800 dark:text-blue-400 mt-0.5 text-lg"></i>
+  <div class="text-sm text-blue-800 dark:text-blue-400">
+    <strong class="font-semibold">Quick Tip:</strong> Use the <a href="{{ url_for('students_directory') }}" class="font-medium underline hover:text-blue-900 dark:hover:text-blue-300">Students page</a> to view all uploaded resumes.
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <!-- Pending Jobs -->
+  <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden flex flex-col">
+    <div class="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex justify-between items-center">
+      <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+        <i class="bi bi-clock-history text-amber-500"></i> Pending Jobs
+        {% if pending_jobs %}<span class="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-400">{{ pending_jobs|length }}</span>{% endif %}
+      </h3>
+    </div>
+    
+    <div class="flex-1 p-5">
+      {% if pending_jobs %}
+        <ul class="space-y-4">
+          {% for j in pending_jobs %}
+            <li class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-4 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors shadow-sm">
+              <div class="flex justify-between items-start gap-4">
+                <div>
+                  <h4 class="font-bold text-zinc-900 dark:text-zinc-100">{{ j.title }}</h4>
+                  <div class="text-sm text-zinc-600 dark:text-zinc-400 mt-1 flex flex-wrap gap-2 items-center">
+                    <span class="flex items-center gap-1"><i class="bi bi-building"></i> {{ j.company }}</span>
+                    <span class="text-zinc-300 dark:text-zinc-700">•</span>
+                    <span class="flex items-center gap-1"><i class="bi bi-geo-alt"></i> {{ j.location }}</span>
+                  </div>
+                  <div class="text-xs text-zinc-500 dark:text-zinc-500 mt-2 bg-zinc-50 dark:bg-zinc-800/50 inline-flex px-2 py-1 rounded">
+                    Posted by {{ j.posted_by.full_name }}
+                  </div>
+                </div>
+                <div class="flex flex-col gap-2 shrink-0">
+                  <form method="post" action="{{ url_for('admin_approve_job', job_id=j.id) }}">
+                    <button type="submit" class="w-full inline-flex items-center justify-center rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-colors">
+                      <i class="bi bi-check-lg mr-1.5"></i> Approve
+                    </button>
+                  </form>
+                  <form method="post" action="{{ url_for('admin_delete_job', job_id=j.id) }}">
+                    <button type="submit" onclick="return confirm('Reject and delete this job?')" class="w-full inline-flex items-center justify-center rounded-lg border border-red-200 dark:border-red-900/50 bg-white dark:bg-zinc-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 shadow-sm hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none transition-colors">
+                      <i class="bi bi-trash3 mr-1.5"></i> Reject
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="h-full flex flex-col items-center justify-center text-center py-8">
+          <i class="bi bi-check-circle text-4xl text-zinc-300 dark:text-zinc-700 mb-3 block"></i>
+          <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">All caught up!</p>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">No pending jobs to review.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Manage Jobs -->
+  <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden flex flex-col h-[500px]">
+    <div class="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex justify-between items-center">
+      <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+        <i class="bi bi-list-task text-primary-500"></i> All Jobs Directory
+      </h3>
+    </div>
+    
+    <div class="flex-1 overflow-y-auto p-5">
+      <ul class="space-y-3">
+        {% for j in all_jobs %}
+          <li class="rounded-lg border border-zinc-100 dark:border-zinc-800 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors flex justify-between items-center group">
+            <div class="min-w-0 pr-4">
+              <div class="flex items-center gap-2 mb-1">
+                <h4 class="font-medium text-sm text-zinc-900 dark:text-zinc-100 truncate">{{ j.title }}</h4>
+                {% if j.is_approved %}
+                  <span class="shrink-0 inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-medium text-emerald-800 dark:text-emerald-400">Approved</span>
+                {% else %}
+                  <span class="shrink-0 inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 dark:text-amber-400">Pending</span>
+                {% endif %}
+              </div>
+              <div class="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                {{ j.company }} • {{ j.location }} • {{ j.created_at.strftime("%d %b %Y") }}
+              </div>
+            </div>
+            <div class="shrink-0">
+              <form method="post" action="{{ url_for('admin_delete_job', job_id=j.id) }}">
+                <button type="submit" onclick="return confirm('Delete this job permenantly?')" class="opacity-0 group-hover:opacity-100 p-2 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all" title="Delete Job">
+                  <i class="bi bi-trash3"></i>
+                </button>
+              </form>
+            </div>
+          </li>
+        {% else %}
+          <div class="text-center py-8 text-sm text-zinc-500 dark:text-zinc-400">No jobs exist in the system.</div>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Users Table -->
+<div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden mb-8">
+  <div class="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex flex-wrap justify-between items-center gap-4">
+    <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+      <i class="bi bi-people text-primary-500"></i> User Management
+      <span class="inline-flex items-center rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">{{ users|length }} Total</span>
+    </h3>
+  </div>
+  
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+      <thead class="bg-zinc-50 dark:bg-zinc-900/50">
+        <tr>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">User</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Role</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Academic</th>
+          <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Resume</th>
+          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white dark:bg-zinc-900 divide-y divide-zinc-200 dark:divide-zinc-800">
+        {% for u in users %}
+          <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-800/20 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="shrink-0 h-8 w-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-600 dark:text-zinc-400">
+                  {{ u.full_name[0]|upper }}
+                </div>
+                <div class="ml-3">
+                  <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ u.full_name }}</div>
+                  <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ u.email }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              {% if u.role == 'admin' %}
+                <span class="inline-flex items-center rounded-md bg-red-50 dark:bg-red-500/10 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-400 ring-1 ring-inset ring-red-600/20 dark:ring-red-500/20">Admin</span>
+              {% elif u.role == 'alumni' %}
+                <span class="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 ring-1 ring-inset ring-emerald-600/20 dark:ring-emerald-500/20">Alumni</span>
+              {% else %}
+                <span class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 ring-1 ring-inset ring-blue-600/20 dark:ring-blue-500/20">Student</span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
+              <div class="flex flex-col gap-0.5">
+                <span class="font-medium text-zinc-900 dark:text-zinc-100">{{ u.roll_number or "-" }}</span>
+                <span>{{ u.department or "-" }}</span>
+                <span class="text-xs">Batch: {{ u.batch or "-" }}</span>
+                {% if u.role == 'student' %}
+                  <span class="text-xs">Joined: {{ u.joined_year or "-" }}</span>
+                {% elif u.role == 'alumni' %}
+                  <span class="text-xs">Graduated: {{ u.graduation_duration or "-" }}</span>
+                {% endif %}
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+              {% if u.role == "student" %}
+                {% if u.resume_filename %}
+                  <a href="{{ url_for('resume_view', student_id=u.id) }}" class="inline-flex items-center justify-center rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-2 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors" title="View PDF">
+                    <i class="bi bi-file-earmark-pdf mr-1"></i> View
+                  </a>
+                {% else %}
+                  <span class="text-xs text-zinc-400 italic">None</span>
+                {% endif %}
+              {% else %}
+                <span class="text-xs text-zinc-300 dark:text-zinc-600">-</span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              {% if current_user.id != u.id %}
+                <form method="post" action="{{ url_for('admin_delete_user', user_id=u.id) }}" class="inline">
+                  <button type="submit" onclick="return confirm('Delete this user permenantly? This cannot be undone.')" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1" title="Delete User">
+                    <i class="bi bi-trash3 text-lg"></i>
+                  </button>
+                </form>
+              {% else %}
+                <span class="text-xs text-zinc-400 italic" title="Cannot delete yourself">You (Admin)</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

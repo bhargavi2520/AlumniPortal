@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block header_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+  <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden">
+    <div class="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50">
+      <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+        <i class="bi bi-person-fill text-primary-500"></i> Profile Details
+      </h3>
+      {% if current_user.role == "student" %}
+        {% if not current_user.resume_filename %}
+        <a href="{{ url_for('resume_upload') }}" class="inline-flex items-center justify-center rounded-lg border border-primary-200 dark:border-primary-500/20 bg-primary-50 dark:bg-primary-500/10 px-3 py-1.5 text-sm font-medium text-primary-700 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-500/20 transition-colors">
+          <i class="bi bi-file-earmark-pdf mr-1.5"></i> Upload Resume
+        </a>
+        {% endif %}
+      {% elif current_user.role in ["alumni","admin"] %}
+        <span class="inline-flex items-center rounded-full bg-zinc-100 dark:bg-zinc-800 px-2.5 py-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          Resumes visible in Students page
+        </span>
+      {% endif %}
+    </div>
+    
+    <div class="p-6">
+      <form method="post" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div class="md:col-span-6">
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Full Name</label>
+            <input name="full_name" value="{{ current_user.full_name }}" required pattern=".*\S+.*" title="This field cannot be empty or just spaces" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+          <div class="md:col-span-6">
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5 flex justify-between">
+              Roll Number 
+              <span class="text-xs text-zinc-400 font-normal mt-0.5"><i class="bi bi-shield-check text-emerald-500 mr-1"></i>Academic Identity</span>
+            </label>
+            <input name="roll_number" value="{{ current_user.roll_number }}" required pattern=".*\S+.*" title="This field cannot be just spaces" placeholder="e.g., 20X41A0501" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+          <div class="md:col-span-3">
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Batch</label>
+            <input name="batch" value="{{ current_user.batch }}" pattern=".*\S+.*" title="This field cannot be just spaces" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+          <div class="md:col-span-3">
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Department</label>
+            <input name="department" value="{{ current_user.department }}" pattern=".*\S+.*" title="This field cannot be just spaces" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+          {% if current_user.role == "student" %}
+          <div class="md:col-span-3">
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Joined Year</label>
+            <input name="joined_year" type="number" min="1900" max="2100" value="{{ current_user.joined_year }}" placeholder="YYYY" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+          {% elif current_user.role in ["alumni", "admin"] %}
+          <div class="md:col-span-3">
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Graduation Duration</label>
+            <input name="graduation_duration" value="{{ current_user.graduation_duration }}" placeholder="e.g. 2014 - 2018" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+          {% endif %}
+        </div>
+
+        {% if current_user.role in ['alumni', 'admin'] %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Company (Alumni)</label>
+            <input name="company" value="{{ current_user.company }}" pattern=".*\S+.*" title="This field cannot be just spaces" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Role/Position (Alumni)</label>
+            <input name="job_role" value="{{ current_user.job_role }}" pattern=".*\S+.*" title="This field cannot be just spaces" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Location</label>
+            <input name="location" value="{{ current_user.location }}" pattern=".*\S+.*" title="This field cannot be just spaces" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">LinkedIn Profile</label>
+            <input name="linkedin" value="{{ current_user.linkedin }}" pattern=".*\S+.*" title="This field cannot be just spaces" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Professional Bio</label>
+          <textarea rows="4" name="bio" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">{{ current_user.bio }}</textarea>
+        </div>
+
+        {% if current_user.role == "student" %}
+        <div>
+          <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+            Core Skills <span class="text-xs text-zinc-400 font-normal">(comma-separated, e.g. Python, Machine Learning, React)</span>
+          </label>
+          <input name="skills" value="{{ current_user.skills }}" pattern=".*\S+.*" title="This field cannot be just spaces"
+                 placeholder="e.g. Python, Django, Data Analysis, SQL"
+                 class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          <p class="mt-1.5 text-xs text-zinc-400">These skills will appear on your public student profile card.</p>
+        </div>
+        {% endif %}
+
+        {% if current_user.role == "student" %}
+          <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <i class="bi bi-file-earmark-text text-2xl text-zinc-400"></i>
+              <div>
+                <p class="font-medium text-sm text-zinc-900 dark:text-zinc-100">Resume Document</p>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                  {% if current_user.resume_filename %}Resume Uploaded{% else %}Please upload resume{% endif %}
+                </p>
+              </div>
+            </div>
+            {% if current_user.resume_filename %}
+              <a class="inline-flex items-center justify-center rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700/50 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 transition-colors" href="{{ url_for('resume_view', student_id=current_user.id) }}" target="_blank">
+                View/Download PDF
+              </a>
+            {% else %}
+              <a href="{{ url_for('resume_upload') }}" class="inline-flex items-center justify-center rounded-lg border border-primary-200 dark:border-primary-500/20 bg-primary-50 dark:bg-primary-500/10 px-3 py-1.5 text-sm font-medium text-primary-700 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-500/20 transition-colors">
+                Upload Resume
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="pt-4 flex justify-end">
+          <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-600 transition-colors">
+            Save Profile
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Post Job{% endblock %}
+{% block header_title %}Jobs{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-6">
+  <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden">
+    <div class="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
+      <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+        <i class="bi bi-briefcase text-primary-500"></i> Post a New Job
+      </h3>
+      <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Create an exclusive opportunity for the alumni network.</p>
+    </div>
+    
+    <div class="p-6">
+      <form method="post" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Job Title <span class="text-red-500">*</span></label>
+            <input name="title" required class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Company <span class="text-red-500">*</span></label>
+            <input name="company" required class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Location <span class="text-red-500">*</span></label>
+            <input name="location" required placeholder="e.g. Remote, San Francisco" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Job Type</label>
+            <div class="relative">
+              <select name="job_type" class="block w-full appearance-none rounded-xl border-0 py-2.5 pl-4 pr-10 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Internship">Internship</option>
+                <option value="Contract">Contract</option>
+                <option value="Remote">Remote</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <i class="bi bi-chevron-down text-zinc-400"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Minimum Salary (LPA) <span class="text-red-500">*</span></label>
+            <input type="number" min="0" name="min_salary" required placeholder="e.g. 4" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Maximum Salary (LPA) <span class="text-red-500">*</span></label>
+            <input type="number" min="0" name="max_salary" required placeholder="e.g. 6" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Required Experience <span class="text-red-500">*</span></label>
+            <input name="required_experience" required placeholder="e.g. 0-2 years, 3+ years" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Required Skills <span class="text-red-500">*</span></label>
+            <input name="required_skills" required placeholder="e.g. Java, Python, SQL" class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Description <span class="text-red-500">*</span></label>
+          <textarea rows="6" name="description" required class="block w-full rounded-xl border-0 py-3 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow resize-y"></textarea>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">External Apply Link (Optional)</label>
+          <input name="apply_link" type="url" placeholder="https://..." class="block w-full rounded-xl border-0 py-2.5 px-4 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800/50 ring-1 ring-inset ring-zinc-300 dark:ring-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm transition-shadow">
+          <p class="mt-1.5 text-xs text-zinc-500">If provided, applicants will be redirected here instead of applying internally.</p>
+        </div>
+        
+        <div class="pt-4 flex items-center justify-end gap-3 border-t border-zinc-100 dark:border-zinc-800/50">
+          <a href="{{ url_for('jobs') }}" class="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+            Cancel
+          </a>
+          <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-600 transition-colors">
+            Publish Post
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
