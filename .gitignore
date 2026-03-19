@@ -156,3 +156,5 @@ cython_debug/
 # Project specific ignores
 output.log
 schema_output.json
+
+./requirements.txt
