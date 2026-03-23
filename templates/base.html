@@ -68,8 +68,11 @@
 <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 flex h-screen overflow-hidden selection:bg-primary-500/30">
 
     {% if current_user.is_authenticated %}
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-zinc-900/50 backdrop-blur-sm z-40 hidden md:hidden transition-opacity duration-300 opacity-0"></div>
+
     <!-- Sidebar Area -->
-    <aside class="w-64 flex-shrink-0 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col transition-colors duration-200 hidden md:flex">
+    <aside id="sidebar" class="w-64 flex-shrink-0 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col transition-transform duration-300 fixed md:relative z-50 h-full transform -translate-x-full md:translate-x-0">
         
         <!-- Logo / Brand -->
         <div class="h-16 flex items-center px-6 border-b border-zinc-200 dark:border-zinc-800">
@@ -162,8 +165,8 @@
         <header class="h-16 flex-shrink-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-4 sm:px-6 lg:px-8 z-10">
             <!-- Mobile Menu Toggle & Title -->
             <div class="flex items-center gap-4">
-                <!-- In a full app, this button would trigger a mobile flyout menu -->
-                <button class="md:hidden text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors">
+                <!-- Mobile Menu Toggle Button -->
+                <button id="mobile-menu-btn" class="md:hidden text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors">
                     <i class="bi bi-list text-2xl"></i>
                 </button>
                 <h1 class="text-lg font-semibold tracking-tight">{% block header_title %}Overview{% endblock %}</h1>
@@ -259,8 +262,45 @@
         </main>
     </div>
 
-    <!-- Theme Toggle Scripts -->
+    <!-- Theme Toggle and Mobile Menu Scripts -->
     <script>
+        // Mobile Sidebar Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+        function toggleMobileMenu() {
+            if (!sidebar) return;
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                if (sidebarBackdrop) {
+                    sidebarBackdrop.classList.remove('hidden');
+                    // Small delay to allow display block to apply before animating opacity
+                    setTimeout(() => {
+                        sidebarBackdrop.classList.remove('opacity-0');
+                        sidebarBackdrop.classList.add('opacity-100');
+                    }, 10);
+                }
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                if (sidebarBackdrop) {
+                    sidebarBackdrop.classList.remove('opacity-100');
+                    sidebarBackdrop.classList.add('opacity-0');
+                    setTimeout(() => {
+                        sidebarBackdrop.classList.add('hidden');
+                    }, 300); // Wait for transition
+                }
+            }
+        }
+
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        }
+        if (sidebarBackdrop) {
+            sidebarBackdrop.addEventListener('click', toggleMobileMenu);
+        }
+
         const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
         const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
 
